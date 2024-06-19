@@ -1,0 +1,62 @@
+#https://hub.docker.com/r/gnzsnz/ib-gateway
+version: '3.8'
+services:
+  ib-gateway:
+    restart: always
+    image: ghcr.io/gnzsnz/ib-gateway:stable
+    env_file: 
+      - .env
+    environment:
+      TWS_USERID: ${TWS_USERID}
+      TWS_PASSWORD: ${TWS_PASSWORD}
+      TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
+      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-}
+      READ_ONLY_API: ${READ_ONLY_API:}
+      VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
+      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
+      BYPASS_WARNING: ${BYPASS_WARNING:-}
+      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
+      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
+      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
+      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
+      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      TZ: ${TIME_ZONE:-Etc/UTC}
+      CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+      JAVA_HEAP_SIZE: ${JAVA_HEAP_SIZE:-}
+      SSH_TUNNEL: ${SSH_TUNNEL:-}
+      SSH_OPTIONS: ${SSH_OPTIONS:-}
+      SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
+      SSH_ALIVE_COUNT: ${SSH_ALIVE_COUNT:-}
+      SSH_PASSPHRASE: ${SSH_PASSPHRASE:-}
+      SSH_REMOTE_PORT: ${SSH_REMOTE_PORT:-}
+      SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
+      SSH_RESTART: ${SSH_RESTART:-}
+      SSH_VNC_PORT: ${SSH_VNC_PORT:-}
+    networks:
+      - ib_network
+    ports:
+       - "4001:4003"
+       - "4002:4004"
+       - "5900:5900"
+
+  options-butterfly-condor:
+    image: options-butterfly-condor:latest
+    env_file: 
+      - .env
+    restart: always
+    depends_on:
+      - ib-gateway
+    pull_policy: never
+    environment:
+      INTERACTIVE_BROKERS_PORT: ${INTERACTIVE_BROKERS_PORT}
+      INTERACTIVE_BROKERS_CLIENT_ID: ${INTERACTIVE_BROKERS_CLIENT_ID}
+      INTERACTIVE_BROKERS_IP: ${INTERACTIVE_BROKERS_IP}
+    networks: 
+      - ib_network
+
+networks: 
+  ib_network: 
+    driver: bridge
