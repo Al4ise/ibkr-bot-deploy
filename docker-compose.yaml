@@ -35,6 +35,13 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
+
+    healthcheck:
+      test: ["CMD-SHELL", "sleep 30"]
+      interval: 40s 
+      timeout: 20s 
+      retries: 5
+
     networks:
       - ib_network
     ports:

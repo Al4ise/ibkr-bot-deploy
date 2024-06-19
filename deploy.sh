@@ -142,7 +142,7 @@ fi
 OS="$(uname)"
 case $OS in
   'Linux')
-    sudo docker-compose -f docker-compose-ib.yaml up "$d"
+    sudo docker-compose -f docker-compose.yaml up "$d"
     #while ! python healthcheck.py; do sleep 5; done
     #sudo docker-compose -f docker-compose-obc.yaml up "$d"
     ;;
