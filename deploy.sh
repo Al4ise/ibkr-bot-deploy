@@ -127,12 +127,12 @@ fi
 
 if [ ! -e "$dir/environment/ib-gateway.tar" ] || [ -n "$rebuild" ]; then
   # pull ghcr.io/gnzsnz/ib-gateway
-  sudo docker pull ghcr.io/gnzsnz/ib-gateway:stable
-  sudo docker save ghcr.io/gnzsnz/ib-gateway > "$dir/environment/ib-gateway.tar"
+  sudo docker pull gnzsnz/ib-gateway:stable
+  sudo docker save gnzsnz/ib-gateway > "$dir/environment/ib-gateway.tar"
 fi
 
-#sudo docker load < "$dir/environment/ib-gateway.tar"
-#sudo docker load < "$dir/environment/options-butterfly-condor.tar"
+sudo docker load < "$dir/environment/ib-gateway.tar"
+sudo docker load < "$dir/environment/options-butterfly-condor.tar"
 
 # run
 if [ -z "$verbose" ]; then
