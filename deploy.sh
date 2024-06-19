@@ -93,29 +93,27 @@ printf "READ_ONLY_API=no\n" >> .env
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
 
-if ! sudo docker image inspect options-butterfly-condor > /dev/null 2>&1 || [ -n "$rebuild" ]; then
-  echo "Pulling options-butterfly-condor..."
+echo "Pulling options-butterfly-condor..."
 
-  git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" || { echo "Probably not logged into git. Exiting..."; exit 1; }
+git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
-  # add needed files
-  cp environment/Dockerfile options_butterfly_condor/
-  cp environment/requirements.txt options_butterfly_condor/
+# add needed files
+cp environment/Dockerfile options_butterfly_condor/
+cp environment/requirements.txt options_butterfly_condor/
 
-  # add retries to bot ib connection
-  OS="$(uname)"
-  case $OS in
-    'Linux')
-      sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
-      ;;
-    'Darwin') 
-      sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
-      ;;
-    *) 
-    exit 1
-    ;;  
-  esac
-fi
+# add retries to bot ib connection
+OS="$(uname)"
+case $OS in
+  'Linux')
+    sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
+    ;;
+  'Darwin') 
+    sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
+    ;;
+  *) 
+  exit 1
+  ;;  
+esac
 
 OS="$(uname)"
 case $OS in
