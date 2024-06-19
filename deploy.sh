@@ -91,6 +91,7 @@ printf "TIME_ZONE=Europe/Zurich\n" >> .env
 printf "TWS_ACCEPT_INCOMING=accept\n" >> .env
 printf "BYPASS_WARNING=yes\n" >> .env
 printf "VNC_SERVER_PASSWORD=12345678\n" >> .env
+printf "READ_ONLY_API=no\n" >> .env
 
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
