@@ -132,6 +132,7 @@ fi
 
 #sudo docker load < "$dir/environment/ib-gateway-docker.tar"
 sudo docker load < "$dir/environment/options-butterfly-condor.tar"
+sudo docker load < "$dir/environment/ib-gateway-docker.tar"
 
 # run
 if [ -z "$verbose" ]; then
