@@ -3,10 +3,6 @@ version: '3.8'
 services:
   ib-gateway:
     restart: always
-    build:
-      context: ./stable
-      tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
     image: ghcr.io/gnzsnz/ib-gateway:stable
     env_file: 
       - .env
@@ -54,8 +50,6 @@ services:
   options-butterfly-condor:
     build:
       context: ./options_butterfly_condor    
-      tags:
-        - "options-butterfly-condor:stable"
     env_file: 
       - .env
     restart: always
