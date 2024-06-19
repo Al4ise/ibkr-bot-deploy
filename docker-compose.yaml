@@ -3,7 +3,7 @@ version: '3.8'
 services:
   ib-gateway:
     restart: always
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+    image: gnzsnz/ib-gateway:stable
     env_file: 
       - .env
     environment:
