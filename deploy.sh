@@ -6,7 +6,7 @@ dir="$(realpath "$(dirname "$0")")"
 if [[ "$*" =~ -r ]]; then
   echo "Will Rebuild"
   rm "$dir/environment/options-butterfly-condor.tar"
-  rm "$dir/environment/ib-gateway-docker.tar"
+  rm "$dir/environment/ib-gateway.tar"
   rebuild=1
 else
   echo "Won't Rebuild"
@@ -63,7 +63,7 @@ else
 fi
 
 # free ports
-ib=( $(sudo docker ps -q --filter ancestor=gnzsnz/ib-gateway-docker) )
+ib=( $(sudo docker ps -q --filter ancestor=gnzsnz/ib-gateway) )
 if [ "${#ib[@]}" -gt 0 ]; then
     sudo docker kill "${ib[@]}" > /dev/null
 fi
@@ -125,15 +125,14 @@ if [ ! -e "$dir/environment/options-butterfly-condor.tar" ] || [ -n "$rebuild" ]
   sudo docker save options-butterfly-condor > "$dir/environment/options-butterfly-condor.tar"
 fi
 
-if [ ! -e "$dir/environment/ib-gateway-docker.tar" ] || [ -n "$rebuild" ]; then
-  # pull ghcr.io/gnzsnz/ib-gateway-docker
-  sudo docker pull ghcr.io/gnzsnz/ib-gateway-docker
-  sudo docker save ghcr.io/gnzsnz/ib-gateway-docker > "$dir/environment/ib-gateway-docker.tar"
+if [ ! -e "$dir/environment/ib-gateway.tar" ] || [ -n "$rebuild" ]; then
+  # pull ghcr.io/gnzsnz/ib-gateway
+  sudo docker pull ghcr.io/gnzsnz/ib-gateway:stable
+  sudo docker save ghcr.io/gnzsnz/ib-gateway > "$dir/environment/ib-gateway.tar"
 fi
 
-#sudo docker load < "$dir/environment/ib-gateway-docker.tar"
-sudo docker load < "$dir/environment/options-butterfly-condor.tar"
-sudo docker load < "$dir/environment/ib-gateway-docker.tar"
+#sudo docker load < "$dir/environment/ib-gateway.tar"
+#sudo docker load < "$dir/environment/options-butterfly-condor.tar"
 
 # run
 if [ -z "$verbose" ]; then
