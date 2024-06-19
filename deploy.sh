@@ -3,16 +3,14 @@
 dir="$(realpath "$(dirname "$0")")"
 
 # rebuild flag
-if [[ "$*" =~ -r ]]; then
+if [[ "$*" =~ r ]]; then
   echo "Will Rebuild"
-  rm "$dir/environment/options-butterfly-condor.tar"
-  rm "$dir/environment/ib-gateway.tar"
   rebuild=1
 else
   echo "Won't Rebuild"
 fi
 
-if [[ "$*" =~ -v ]]; then
+if [[ "$*" =~ v ]]; then
   echo "Verbose On"
   verbose=1
 fi
@@ -21,7 +19,7 @@ fi
 cleanup() {
     echo "Performing cleanup..."
     rm -f "$dir/.env"
-    rm -rf "$dir/environment/options_butterfly_condor"
+    rm -rf "$dir/options_butterfly_condor"
 }
 
 # Set up exit trap
@@ -80,7 +78,6 @@ while lsof -ti:$PORT > /dev/null; do
 done
 echo "Using port $PORT."
 
-cd "$dir"
 printf "INTERACTIVE_BROKERS_CLIENT_ID=%s\n" "$((RANDOM % 1000 + 1))" >> .env
 printf "INTERACTIVE_BROKERS_PORT=%s\n" "$PORT" >> .env
 printf "INTERACTIVE_BROKERS_IP=ib-gateway\n" >> .env
@@ -96,64 +93,43 @@ printf "READ_ONLY_API=no\n" >> .env
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
 
-if [ ! -e "$dir/environment/options-butterfly-condor.tar" ] || [ -n "$rebuild" ]; then
-# get bot
-  cd "$dir/environment"
+if ! sudo docker image inspect options-butterfly-condor > /dev/null 2>&1 || [ -n "$rebuild" ]; then
+  echo "Pulling options-butterfly-condor..."
+
   git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
   # add needed files
-  cp Dockerfile options_butterfly_condor/
-  cp requirements.txt options_butterfly_condor/
+  cp environment/Dockerfile options_butterfly_condor/
+  cp environment/requirements.txt options_butterfly_condor/
 
   # add retries to bot ib connection
   OS="$(uname)"
   case $OS in
     'Linux')
-      sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/environment/options_butterfly_condor/credentials.py"
+      sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
       ;;
     'Darwin') 
-      sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/environment/options_butterfly_condor/credentials.py"
+      sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' "$dir/options_butterfly_condor/credentials.py"
       ;;
     *) 
     exit 1
-    ;;
+    ;;  
   esac
-
-  # build options-butterfly-condor
-  cd "$dir/environment/options_butterfly_condor"
-  sudo docker buildx build -t options-butterfly-condor .
-  sudo docker save options-butterfly-condor > "$dir/environment/options-butterfly-condor.tar"
 fi
-
-if [ ! -e "$dir/environment/ib-gateway.tar" ] || [ -n "$rebuild" ]; then
-  # pull ghcr.io/gnzsnz/ib-gateway
-  sudo docker pull gnzsnz/ib-gateway:stable
-  sudo docker save gnzsnz/ib-gateway > "$dir/environment/ib-gateway.tar"
-fi
-
-sudo docker load < "$dir/environment/ib-gateway.tar"
-sudo docker load < "$dir/environment/options-butterfly-condor.tar"
-
-# run
-if [ -z "$verbose" ]; then
-  d="-d"
-fi
-cd "$dir"
 
 OS="$(uname)"
 case $OS in
   'Linux')
-    sudo docker-compose up "$d"
+    sudo docker-compose up --remove-orphans
     #while ! python healthcheck.py; do sleep 5; done
     #sudo docker-compose -f docker-compose-obc.yaml up "$d"
     ;;
 
   'Darwin') 
-    sudo docker compose up "$d"
+    sudo docker compose up --remove-orphans
     #while ! python healthcheck.py; do sleep 5; done
     #sudo docker compose -f docker-compose-obc.yaml up "$d"
     ;;
-
   *) 
    exit 1
    ;;

@@ -2,8 +2,11 @@
 services:
   ib-gateway:
     restart: always
-    image: ib-gateway:stable
-    pull_policy: never
+    build:
+      context: ./stable
+      tags:
+        - "ghcr.io/gnzsnz/ib-gateway:stable"
+    image: ghcr.io/gnzsnz/ib-gateway:stable
     env_file: 
       - .env
     environment:
@@ -36,25 +39,28 @@ services:
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
     healthcheck:
-      test: ["CMD-SHELL", "sleep 30"]
+      test: ["CMD-SHELL", "sleep 5"]
       interval: 40s 
       timeout: 20s 
       retries: 5
     networks:
       - ib_network
     ports:
-       - "4001:4003"
-       - "4002:4004"
+       - "127.0.0.1:4001:4003"
+       - "127.0.0.1:4002:4004"
        - "5900:5900"
 
   options-butterfly-condor:
-    image: options-butterfly-condor:latest
+    build:
+      context: ./options_butterfly_condor    
+      tags:
+        - "options-butterfly-condor:stable"
     env_file: 
       - .env
     restart: always
     depends_on:
-      - ib-gateway
-    pull_policy: never
+      ib-gateway:
+        condition: service_healthy
     environment:
       INTERACTIVE_BROKERS_PORT: ${INTERACTIVE_BROKERS_PORT}
       INTERACTIVE_BROKERS_CLIENT_ID: ${INTERACTIVE_BROKERS_CLIENT_ID}
