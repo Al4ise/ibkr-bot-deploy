@@ -14,7 +14,7 @@ services:
       USERNAME: ${USERNAME}
       PASSWORD: ${PASSWORD}
       TWOFA_TIMEOUT_ACTION: restart
-      GATEWAY_OR_TWS: gateway
+      GATEWAY_OR_TWS: tws
       #
       # Variables prefixed with IBC_ override IBCAlpha`s config.ini:
       IBC_TradingMode: "${TRADING_MODE}"
@@ -32,13 +32,6 @@ services:
       IBC_BypassUSStocksMarketDataInSharesWarning: 'yes'
       IBC_BypassRedirectOrderWarning: 'yes'
       IBC_BypassNoOverfillProtectionPrecaution: 'yes'
-
-    healthcheck:
-      test: ["CMD-SHELL", "sleep 5"]
-      interval: 40s 
-      timeout: 20s 
-      start_period: 80s
-      retries: 5
     networks:
       - ib_network
 
