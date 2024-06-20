@@ -83,6 +83,7 @@ git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" ||
 # add needed files
 cp environment/Dockerfile options_butterfly_condor/
 cp environment/requirements.txt options_butterfly_condor/
+cp environment/healthcheck.py options_butterfly_condor/
 
 # add retries to bot ib connection
 OS="$(uname)"
