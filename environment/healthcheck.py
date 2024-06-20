@@ -1,17 +1,28 @@
-import os, random
-from ib_insync import IB, util, Forex
+import os
+from datetime import datetime, timedelta
 
-if __name__ == "__main__":
+import pandas as pd
+import pandas_ta as ta
+import pytz
+from lumibot.entities import Asset, TradingFee
+from lumibot.strategies.strategy import Strategy
+import yfinance as yf
 
-    if 'IB_GATEWAY_PING_CLIENT_ID' in os.environ:
-        clientId = int(os.environ['IB_GATEWAY_PING_CLIENT_ID'])
-    else:
-        clientId = int(random.random() * 15359) + 1024
-    ib = IB()
-    # ib.connect('localhost', int(os.environ['IBGW_PORT']), clientId)
-    ib.connect('ib-gateway', 8888, clientId)
-    contract = Forex('EURUSD')
-    bars = ib.reqHistoricalData(
-        contract, endDateTime='', durationStr='5 D',
-        barSizeSetting='1 day', whatToShow='MIDPOINT', useRTH=True)
-    print(bars[-1])
+from credentials import broker
+
+class ConnectionTest(Strategy):
+    def initialize(self):
+        self.symbol="SPY"
+        self.sleeptime = "5M"
+
+        dt = self.get_datetime()
+
+        if dt is None:
+            exit(1)
+        exit(0)
+
+
+strategy = ConnectionTest(
+    broker=broker,
+    name="ConnectionTest"
+    )

@@ -2,10 +2,9 @@
 
 dir="$(realpath "$(dirname "$0")")"
 
-if [[ "$*" =~ v ]]; then
-  echo "Verbose On"
-else
-    d="-d"
+if [[ "$*" =~ r ]]; then
+  echo "Will Rebuild"
+  sudo docker system prune -a -f
 fi
 
 # cleanup
@@ -84,6 +83,7 @@ git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" ||
 cp environment/Dockerfile options_butterfly_condor/
 cp environment/requirements.txt options_butterfly_condor/
 cp environment/healthcheck.py options_butterfly_condor/
+cp environment/launch.sh options_butterfly_condor/
 
 # add retries to bot ib connection
 OS="$(uname)"

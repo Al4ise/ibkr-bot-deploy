@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 #RUN pip install --no-cache-dir lumibot
 
 # Run main.py when the container launches
-CMD while ! python healthcheck.py; do sleep 5; done && python main.py
+CMD /app/launch.sh

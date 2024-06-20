@@ -14,7 +14,7 @@ services:
       USERNAME: ${USERNAME}
       PASSWORD: ${PASSWORD}
       TWOFA_TIMEOUT_ACTION: restart
-      GATEWAY_OR_TWS: tws
+      GATEWAY_OR_TWS: gateway
       #
       # Variables prefixed with IBC_ override IBCAlpha`s config.ini:
       IBC_TradingMode: "${TRADING_MODE}"
