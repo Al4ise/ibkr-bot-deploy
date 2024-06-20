@@ -42,8 +42,7 @@ services:
       - .env
     restart: always
     depends_on:
-      ib-gateway:
-        condition: service_healthy
+      - ib-gateway
     environment:
       INTERACTIVE_BROKERS_PORT: ${INTERACTIVE_BROKERS_PORT}
       INTERACTIVE_BROKERS_CLIENT_ID: ${INTERACTIVE_BROKERS_CLIENT_ID}
