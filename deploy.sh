@@ -2,17 +2,10 @@
 
 dir="$(realpath "$(dirname "$0")")"
 
-# rebuild flag
-if [[ "$*" =~ r ]]; then
-  echo "Will Rebuild"
-  rebuild=1
-else
-  echo "Won't Rebuild"
-fi
-
 if [[ "$*" =~ v ]]; then
   echo "Verbose On"
-  verbose=1
+else
+    d="-d"
 fi
 
 # cleanup
@@ -28,13 +21,13 @@ trap cleanup EXIT SIGINT SIGTERM
 
 # .env setup
 cd "$dir"
-
+PORT=8888
 # make .env if not available
 if [ ! -e "environment/.env" ]; then
-  read -rp "Enter TWS_USERID: " tws_userid
-  read -rp "Enter TWS_PASSWORD: " tws_password
-  echo "TWS_USERID=$tws_userid" >> environment/.env
-  echo "TWS_PASSWORD=$tws_password" >> environment/.env
+  read -rp "Enter USERNAME: " tws_userid
+  read -rp "Enter PASSWORD: " tws_password
+  echo "USERNAME=$tws_userid" >> environment/.env
+  echo "PASSWORD=$tws_password" >> environment/.env
 fi
 
 # pick trade mode
@@ -46,13 +39,10 @@ read -rp "Enter your choice: " choice
 if [ "$choice" == "1" ]; then
     echo "[*] Will Deploy Live"
     printf "TRADING_MODE=live\n" >> .env
-    PORT=4003
-
 
 elif [ "$choice" == "2" ]; then
     echo "[*] Will Deploy Paper"
     printf "TRADING_MODE=paper\n" >> .env
-    PORT=4004
 
 else
     echo "Invalid choice. Exiting..."
@@ -61,15 +51,8 @@ else
 fi
 
 # free ports
-ib=( $(sudo docker ps -q --filter ancestor=gnzsnz/ib-gateway) )
-if [ "${#ib[@]}" -gt 0 ]; then
-    sudo docker kill "${ib[@]}" > /dev/null
-fi
-
-obc=( $(sudo docker ps -q --filter ancestor=options-butterfly-condor) )
-if [ "${#obc[@]}" -gt 0 ]; then
-    sudo docker kill "${obc[@]}" > /dev/null
-fi
+sudo docker ps --format "{{.Names}}" | grep 'options-butterfly-condor' | xargs -r sudo docker kill > /dev/null
+sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
 
 # Check if port is in use and find an available port if necessary
 while lsof -ti:$PORT > /dev/null; do
