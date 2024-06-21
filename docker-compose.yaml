@@ -37,7 +37,7 @@ services:
 
   options-butterfly-condor:
     build:
-      context: ./options_butterfly_condor    
+      context: ./environment/bot    
     env_file: 
       - .env
     restart: always
