@@ -12,9 +12,6 @@ from credentials import broker
 
 class ConnectionTest(Strategy):
     def initialize(self):
-        self.symbol="SPY"
-        self.sleeptime = "5M"
-
         dt = self.get_datetime()
 
         if dt is None:
