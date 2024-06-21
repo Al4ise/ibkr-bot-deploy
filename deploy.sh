@@ -99,20 +99,4 @@ case $OS in
   ;;  
 esac
 
-OS="$(uname)"
-case $OS in
-  'Linux')
-    sudo docker-compose up --remove-orphans -d
-    #while ! python healthcheck.py; do sleep 5; done
-    #sudo docker-compose -f docker-compose-obc.yaml up "$d"
-    ;;
-
-  'Darwin') 
-    sudo docker compose up --remove-orphans -d
-    #while ! python healthcheck.py; do sleep 5; done
-    #sudo docker compose -f docker-compose-obc.yaml up "$d"
-    ;;
-  *) 
-   exit 1
-   ;;
-esac
+sudo docker compose up --remove-orphans -d
