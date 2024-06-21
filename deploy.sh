@@ -75,8 +75,6 @@ printf "READ_ONLY_API=no\n" >> .env
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
 
-echo "Pulling options-butterfly-condor..."
-
 git clone "git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
 # add needed files
