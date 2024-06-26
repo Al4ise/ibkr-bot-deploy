@@ -32,8 +32,8 @@ services:
       IBC_BypassUSStocksMarketDataInSharesWarning: 'yes'
       IBC_BypassRedirectOrderWarning: 'yes'
       IBC_BypassNoOverfillProtectionPrecaution: 'yes'
-      IBC_ColdRestartTime: '20:00'
-      IBC_AutoRestartTime: '20:00'
+      IBC_ColdRestartTime: '02:00 PM'
+      IBC_AutoRestartTime: '02:00 PM'
 
     networks:
       - ib_network
