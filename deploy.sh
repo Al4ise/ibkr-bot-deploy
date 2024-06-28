@@ -16,7 +16,8 @@ trap cleanup EXIT SIGINT SIGTERM
 # .env setup
 cd "$dir"
 PORT=8888
-bot_repo="git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git"
+bot_repo="git@github.com:Lumiwealth-Strategies/options_condor_martingale.git"
+#bot_repo="git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git"
 bot_name="$(basename "$bot_repo" .git)"
 
 while [ "$choice" != "1" ] && [ "$choice" != "2" ]; do
