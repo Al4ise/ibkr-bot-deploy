@@ -38,7 +38,7 @@ services:
     networks:
       - ib_network
 
-  options-butterfly-condor:
+  strategy:
     build:
       context: ./environment/bot    
     env_file: 
