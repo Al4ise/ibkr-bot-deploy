@@ -90,10 +90,10 @@ git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into
 
 # add needed files
 if [ ! -e "$dir/environment/bot/requirements.txt" ]; then 
-  cp environment/Dockerfile "$dir/environment/bot/"
+  cp environment/requirements.txt "$dir/environment/bot/"
 fi
 
-cp environment/requirements.txt "$dir/environment/bot/"
+cp environment/Dockerfile "$dir/environment/bot/"
 cp environment/healthcheck.py "$dir/environment/bot/"
 cp environment/launch.sh "$dir/environment/bot/"
 
