@@ -6,7 +6,6 @@ class ConnectionTest(Strategy):
         dt = self.get_datetime()
 
         if dt is None:
-            self.log_message("-------------------------broken")
             exit(1)
         exit(0)
 

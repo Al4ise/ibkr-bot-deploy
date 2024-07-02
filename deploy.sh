@@ -90,7 +90,7 @@ if [ ! -e "environment/.env" ]; then
   echo "TWS_PASSWORD=$tws_password" >> environment/.env
 
   echo 'ALPACA_BASE_URL="https://paper-api.alpaca.markets/v2"' >> environment/.env
-  printf 'NOT_USING_ALPACA=False' >> environment/.env
+  echo 'BROKER=IBKR' >> environment/.env
 fi
 
 
@@ -116,11 +116,11 @@ if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1
   case $OS in
     'Linux')
       sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
-      sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and not os.environ.get("NOT_USING_ALPACA", "").lower() == "true":/' environment/bot/credentials.py
+      sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
       ;;
     'Darwin') 
       sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
-      sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and not os.environ.get("NOT_USING_ALPACA", "").lower() == "true":/' environment/bot/credentials.py
+      sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
       ;;
     *) 
     exit 1
@@ -128,4 +128,4 @@ if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1
   esac
 fi
 
-sudo docker compose up --remove-orphans -d
+sudo docker compose up --remove-orphans
