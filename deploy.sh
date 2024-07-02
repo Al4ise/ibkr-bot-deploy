@@ -128,4 +128,4 @@ if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1
   esac
 fi
 
-sudo docker compose up --remove-orphans
+sudo docker compose up --remove-orphans -d
