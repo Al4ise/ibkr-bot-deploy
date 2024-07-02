@@ -9,8 +9,6 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-#RUN pip install --no-cache-dir yfinance alpaca-py ccxt ibapi polygon-api-client pandas_ta python_dotenv lumiwealth-tradier pyarrow plotly
-#RUN pip install --no-cache-dir lumibot
 
 # Run main.py when the container launches
 CMD /app/launch.sh
