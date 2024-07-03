@@ -106,10 +106,10 @@ if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1
   git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
   # add needed files
-  cp environment/requirements.txt "environment/bot/"
-  cp environment/Dockerfile "environment/bot/"
-  cp environment/healthcheck.py "environment/bot/"
-  cp environment/launch.sh "environment/bot/"
+  cp environment/requirements.txt environment/bot/
+  cp environment/Dockerfile environment/bot/
+  cp environment/healthcheck.py environment/bot/
+  cp environment/launch.sh environment/bot/
 
   # patch credentials
   OS="$(uname)"
