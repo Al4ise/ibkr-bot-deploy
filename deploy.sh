@@ -93,7 +93,6 @@ if [ ! -e "environment/.env" ]; then
   echo 'BROKER=IBKR' >> environment/.env
 fi
 
-
 printf "INTERACTIVE_BROKERS_CLIENT_ID=%s\n" "$((RANDOM % 1000 + 1))" >> .env
 printf "INTERACTIVE_BROKERS_PORT=%s\n" "$PORT" >> .env
 
@@ -102,7 +101,7 @@ cat "$dir/environment/.env" >> .env
 
 printf "INTERACTIVE_BROKERS_IP=ib-gateway\n" >> .env
 
-if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1; then
+if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1; then
   git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
   # add needed files
@@ -111,7 +110,7 @@ if ! docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1
   cp environment/healthcheck.py environment/bot/
   cp environment/launch.sh environment/bot/
 
-  # patch credentials
+  # patch credentials and pick config
   OS="$(uname)"
   case $OS in
     'Linux')
