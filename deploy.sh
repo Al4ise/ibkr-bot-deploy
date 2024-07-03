@@ -30,10 +30,10 @@ while [ "$choice" != "1" ] && [ "$choice" != "2" ]; do
   echo "Menu:"
   echo "[1] Trade Live"
   echo "[2] Trade Paper"
-  echo "[3] Reset Credentials"
-  echo "[4] Docker Prune Everything"
-  echo "[5] Docker Prune Strategies"
-  echo "[6] Containerize"
+  echo "[3] Trade Both"
+  echo "[4] Reset Credentials"
+  echo "[5] Docker Prune Everything"
+  echo "[6] Docker Prune Strategies"
   
   read -rp "Enter your choice: " choice
 
@@ -43,26 +43,26 @@ while [ "$choice" != "1" ] && [ "$choice" != "2" ]; do
       PORT=4003
 
   elif [ "$choice" == "2" ]; then
-      echo "[*] Will Deploy Paper"
       printf "TRADING_MODE=paper\n" >> .env
       PORT=4004
+      echo "[*] Will Deploy Paper"
 
   elif [ "$choice" == "3" ]; then
+      printf "TRADING_MODE=both\n" >> .env
+      PORT=4004
+      echo "[*] Will Deploy Both"
+
+  elif [ "$choice" == "4" ]; then
       rm -f "environment/.env"
       echo "[*] Credentials Reset"
 
-  elif [ "$choice" == "4" ]; then
-    sudo docker system prune -a -f --volumes
-    echo "[*] Done"
-
   elif [ "$choice" == "5" ]; then
-    sudo docker images --format "{{.Repository}}" | grep "strategy" | xargs -r sudo docker rmi -f
-    echo "[*] Done"
-
+      sudo docker system prune -a -f --volumes
+      echo "[*] Done"
 
   elif [ "$choice" == "6" ]; then
-    #containerize=1
-    echo "[*] Will Containerize. It may use more memory,"
+      sudo docker images --format "{{.Repository}}" | grep "strategy" | xargs -r sudo docker rmi -f
+      echo "[*] Done"
 
   else
       echo "Invalid choice. Exiting..."
@@ -84,13 +84,14 @@ if [ ! -e "environment/.env" ]; then
   read -rp "Enter TWS_PASSWORD: " tws_password
   read -rp "Enter ALPACA_API_KEY: " alpaca_api_key
   read -rp "Enter ALPACA_API_SECRET: " alpaca_api_secret
+
   echo "ALPACA_API_KEY=$alpaca_api_key" >> environment/.env
   echo "ALPACA_API_SECRET=$alpaca_api_secret" >> environment/.env
   echo "TWS_USERID=$tws_userid" >> environment/.env
   echo "TWS_PASSWORD=$tws_password" >> environment/.env
-
   echo 'ALPACA_BASE_URL="https://paper-api.alpaca.markets/v2"' >> environment/.env
   echo 'BROKER=IBKR' >> environment/.env
+  echo "INTERACTIVE_BROKERS_IP=ib-gateway" >> environment/.env
 fi
 
 printf "INTERACTIVE_BROKERS_CLIENT_ID=%s\n" "$((RANDOM % 1000 + 1))" >> .env
@@ -99,7 +100,6 @@ printf "INTERACTIVE_BROKERS_PORT=%s\n" "$PORT" >> .env
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
 
-printf "INTERACTIVE_BROKERS_IP=ib-gateway\n" >> .env
 
 if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1; then
   git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
@@ -107,8 +107,6 @@ if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null
   # add needed files
   cp environment/requirements.txt environment/bot/
   cp environment/Dockerfile environment/bot/
-  cp environment/healthcheck.py environment/bot/
-  cp environment/launch.sh environment/bot/
 
   # patch credentials and pick config
   OS="$(uname)"
