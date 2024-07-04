@@ -110,6 +110,8 @@ if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null
   # add needed files
   cp environment/requirements.txt environment/bot/
   cp environment/Dockerfile environment/bot/
+  cp environment/launch.sh environment/bot/
+  cp environment/healthcheck.py environment/bot/
 
   # patch credentials and pick config
   OS="$(uname)"
