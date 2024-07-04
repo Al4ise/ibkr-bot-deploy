@@ -17,7 +17,6 @@ trap cleanup EXIT SIGINT SIGTERM
 cd "$dir"
 bot_repo="git@github.com:Lumiwealth-Strategies/options_condor_martingale.git"
 #bot_repo="git@github.com:Lumiwealth-Strategies/options_butterfly_condor.git"
-bot_name="$(basename "$bot_repo" .git)"
 
 # free ports
 sudo docker ps --format "{{.Names}}" | grep 'strategy' | xargs -r sudo docker kill > /dev/null
@@ -84,7 +83,9 @@ if [ ! -e "environment/.env" ]; then
   read -rp "Enter TWS_PASSWORD: " tws_password
   read -rp "Enter ALPACA_API_KEY: " alpaca_api_key
   read -rp "Enter ALPACA_API_SECRET: " alpaca_api_secret
+  read -rp "Enter Configuration Number: " config
 
+  echo "CONFIG_NUMBER=$config" >> environment/.env
   echo "ALPACA_API_KEY=$alpaca_api_key" >> environment/.env
   echo "ALPACA_API_SECRET=$alpaca_api_secret" >> environment/.env
   echo "TWS_USERID=$tws_userid" >> environment/.env
@@ -100,6 +101,8 @@ printf "INTERACTIVE_BROKERS_PORT=%s\n" "$PORT" >> .env
 # add secrets from .env to local .env
 cat "$dir/environment/.env" >> .env
 
+# load env variables
+source "$dir/.env"
 
 if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1; then
   git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
@@ -114,14 +117,18 @@ if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null
     'Linux')
       sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
       sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
+      sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = 'trading_signals_options_condor_martingale_.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = 'trading_signals_options_condor_martingale_${CONFIG_NUMBER}'/" environment/bot/main.py
       ;;
+
     'Darwin') 
       sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
       sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
+      sed -i '' "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = 'trading_signals_options_condor_martingale_.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = 'trading_signals_options_condor_martingale_${CONFIG_NUMBER}'/" environment/bot/main.py
       ;;
-    *) 
-    exit 1
-    ;;  
+
+      *) 
+      exit 1
+      ;;  
   esac
 fi
 
