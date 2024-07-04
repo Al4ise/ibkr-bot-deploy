@@ -17,6 +17,8 @@ services:
       TWS_COLD_RESTART: '11:59 PM'
       RELOGIN_AFTER_TWOFA_TIMEOUT: 'yes'
       TIME_ZONE: America/New_York
+      TZ: America/New_York
+
     networks:
       - ib_network
 
@@ -32,6 +34,8 @@ services:
       INTERACTIVE_BROKERS_PORT: ${INTERACTIVE_BROKERS_PORT}
       INTERACTIVE_BROKERS_CLIENT_ID: ${INTERACTIVE_BROKERS_CLIENT_ID}
       INTERACTIVE_BROKERS_IP: ${INTERACTIVE_BROKERS_IP}
+      TZ: America/New_York
+
     networks: 
       - ib_network
 
