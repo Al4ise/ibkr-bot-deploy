@@ -10,6 +10,7 @@ services:
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE}
       TWS_ACCEPT_INCOMING: 'accept'
+      VNC_SERVER_PASSWORD: '12345678'
       READ_ONLY_API: 'no'
       TWOFA_TIMEOUT_ACTION: 'restart'
       BYPASS_WARNING: 'yes'
