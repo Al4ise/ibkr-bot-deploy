@@ -22,6 +22,8 @@ services:
 
     networks:
       - ib_network
+    ports:
+      - 5900:5900
 
   strategy:
     build:
