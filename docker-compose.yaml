@@ -1,7 +1,7 @@
-#https://hub.docker.com/r/gnzsnz/ib-gateway
 services:
   ib-gateway:
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+    image: grzesir/ib-gateway:stable
+    platform: linux/arm64
     restart: always
     env_file: 
       - .env

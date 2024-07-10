@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim-bookworm
+FROM --platform=linux/arm64 python:3.10-slim-bookworm
 
 # Set the working directory in the container to /app
 WORKDIR /app
@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run main.py when the container launches
-CMD /app/launch.sh
+CMD ["/app/launch.sh"]
