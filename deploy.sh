@@ -10,24 +10,14 @@ if [ -f "$dir/.env.deploy" ]; then
     source "$dir/.env.deploy"
 fi
 
-# cleanup
-cleanup() {
-    echo "Performing cleanup..."
-    rm -rf "$dir/environment/bot"
-}
-
-# Set up exit trap
-cleanup
-trap cleanup EXIT SIGINT SIGTERM
-
 # .env setup
 cd "$dir"
 
-# free ports
+# Free ports
 sudo docker ps --format "{{.Names}}" | grep 'strategy' | xargs -r sudo docker kill > /dev/null
 sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
 
-# reset .env if any
+# Reset .env if any
 rm -f "$dir/.env"
 
 # Echo the env variable IBKR_USERNAME to the user
@@ -80,7 +70,7 @@ while lsof -ti:$PORT > /dev/null; do
 done
 echo "Using port $PORT."
 
-# make .env if not available
+# Make .env if not available
 if [ ! -e "environment/.cred" ]; then
     tws_userid="${IBKR_USERNAME:-}"
     tws_password="${IBKR_PASSWORD:-}"
@@ -101,41 +91,45 @@ fi
 printf "INTERACTIVE_BROKERS_CLIENT_ID=%s\n" "$((RANDOM % 1000 + 1))" >> .env
 printf "INTERACTIVE_BROKERS_PORT=%s\n" "$PORT" >> .env
 
-# add variables to local .env
+# Add variables to local .env
 cat "$dir/environment/.cred" >> .env
 cat "$dir/environment/.pref" >> .env
 
-# load env variables
+# Load env variables
 source "$dir/.env"
 
-if ! sudo docker images --format "{{.Repository}}" | grep "strategy" > /dev/null 2>&1; then
+# Clone the repository only if the directory does not exist
+if [ ! -d "$dir/environment/bot" ]; then
     git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
-
-    # add needed files
-    cp environment/requirements.txt environment/bot/
-    cp environment/Dockerfile environment/bot/
-    cp environment/launch.sh environment/bot/
-    cp environment/healthcheck.py environment/bot/
-
-    # patch credentials and pick config
-    case $OS in
-        'Linux')
-            sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
-            sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
-            sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${selected_config}'/" environment/bot/main.py
-            ;;
-
-        'Darwin') 
-            sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
-            sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
-            sed -i '' "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${selected_config}'/" environment/bot/main.py
-            ;;
-
-        *) 
-            exit 1
-            ;;  
-    esac
+else
+    echo "Directory $dir/environment/bot already exists. Skipping clone."
 fi
+
+# Add needed files
+cp environment/requirements.txt environment/bot/
+cp environment/Dockerfile environment/bot/
+cp environment/launch.sh environment/bot/
+cp environment/healthcheck.py environment/bot/
+# cp environment/bot/credentials.py environment/bot/
+
+# Patch credentials and pick config
+case $OS in
+    'Linux')
+        sed -i 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
+        sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
+        sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${selected_config}'/" environment/bot/main.py
+        ;;
+
+    'Darwin') 
+        sed -i '' 's/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG)/broker = InteractiveBrokers(INTERACTIVE_BROKERS_CONFIG, max_connection_retries=50)/' environment/bot/credentials.py
+        sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
+        sed -i '' "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${selected_config}'/" environment/bot/main.py
+        ;;
+
+    *) 
+        exit 1
+        ;;  
+esac
 
 # List available configuration files
 echo "Available configuration files:"
@@ -163,7 +157,7 @@ selected_config="$(basename "$(ls -1 "environment/bot/configurations" | grep ".p
 # Set the selected configuration file in .env
 echo "CONFIG_FILE=$selected_config" >> .env
 
-# set config
+# Set config
 case $OS in
     'Linux')
         sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${selected_config}'/" environment/bot/main.py
