@@ -26,7 +26,7 @@ services:
       
   strategy:
     build:
-      context: ./environment/bot    
+      context: ./environment/bot
     env_file: 
       - .env
     restart: always
