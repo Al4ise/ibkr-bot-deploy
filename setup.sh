@@ -54,7 +54,7 @@ fi
 
 if [ ! -e "environment/.pref" ]; then
   read -rp "Enter Lumibot Strategy GitHub URL: " bot_repo
-  echo "bot_repo=$bot_repo" >> environment/.pref
+  echo "BOT_REPO=$bot_repo" >> environment/.pref
   #bot_repo="git@github.com:Lumiwealth-Strategies/options_condor_martingale.git"
 
   # Not To Touch the Values
