@@ -15,7 +15,7 @@ The `.cred` file is used to store sensitive credentials required by the applicat
 - `ALPACA_API_KEY`: The API key for Alpaca. Used for news trading (Optional).
 - `ALPACA_API_SECRET`: The secret key for Alpaca API (Optional).
 
-## `.pref` File
+## `environment/.pref` File
 
 The `environment/.pref` file contains user preferences that customize the application's behavior. The specific arguments and their descriptions are as follows:
 
