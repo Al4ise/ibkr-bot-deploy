@@ -11,7 +11,6 @@ cleanup() {
     rm -f "$dir/.env"
 }
 
-# Set up exit trap
 cleanup
 
 # .env setup
@@ -30,7 +29,6 @@ cat "$dir/environment/.pref" >> .env
 source "$dir/.env"
 
 # free ports
-# Kill and delete containers
 sudo docker ps --format "{{.Names}}" | grep 'strategy' | xargs -r sudo docker kill > /dev/null
 sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
 
@@ -45,22 +43,22 @@ echo "Using port $INTERACTIVE_BROKERS_PORT."
 
 printf "INTERACTIVE_BROKERS_CLIENT_ID=%s\n" "$((RANDOM % 1000 + 1))" >> .env
 
-git clone "$bot_repo" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
+git clone "$BOT_REPO" "$dir/environment/bot" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
 # add needed files
 #cp environment/requirements.txt environment/bot/
 cp environment/Dockerfile environment/bot/
-cp environment/launch.sh environment/bot/
-cp environment/healthcheck.py environment/bot/
 
 # Set config
 if [ -n "$CONFIG_FILE" ]; then 
   case $OS in
     'Linux')
+      #sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
       sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${CONFIG_FILE}'/" environment/bot/main.py
       ;;
 
     'Darwin') 
+      #sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
       sed -i '' "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${CONFIG_FILE}'/" environment/bot/main.py
       ;;
 

@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run main.py when the container launches
-CMD ["/app/launch.sh"]
+CMD ["python", "/app/main.py"]
