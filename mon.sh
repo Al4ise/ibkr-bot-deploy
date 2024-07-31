@@ -11,7 +11,27 @@ function main_menu() {
     echo
     case $choice in
         1)
-            sudo docker logs $(sudo docker ps --filter "name=strategy" -q)
+            # get all strategies from .pref and make a menu that picks one strategy name
+            while IFS= read -r line; do
+                strategies+=("$line")
+            done < "environment/.pref"
+
+            for strategy in "${strategies[@]}"; do
+                IFS=',' read -r strategy_name _ <<< "$strategy"
+                menu_strategies+=( "$strategy_name" )
+            done
+            echo "Select a strategy:"
+            
+            for i in "${!menu_strategies[@]}"; do
+                echo "[$(($i+1))] ${menu_strategies[$i]}"
+            done
+
+            read -rp "Select Strategy: : " choice
+
+            selected_strategy="${menu_strategies[$((choice-1))]}"
+            echo "You selected: $selected_strategy"
+
+            sudo docker logs $(sudo docker ps --filter "name=$selected_strategy" -q)
             read -n 1 -s -r -p "Press any key to continue..."
             echo
             main_menu

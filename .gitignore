@@ -1,3 +1,4 @@
 .env*
 .DS_Store*
-/environment/bot
+/environment/bots
+docker-compose.yaml

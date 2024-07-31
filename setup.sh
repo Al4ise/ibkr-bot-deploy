@@ -1,74 +1,61 @@
 #!/usr/bin/env bash
 
-dir="$(realpath "$(dirname "$0")")"
-cd "$dir"
+main(){
+    dir="$(realpath "$(dirname "$0")")"
+    cd "$dir"
+    getIBCredentials
+    setupStrategies
+}
+# ask for username and password
+getIBCredentials(){
+    if [ ! -e "environment/.cred" ]; then
+        # Ask for IB Creds
+        read -rp "Enter IBKR Username: " tws_userid
+        read -rp "Enter IBKR Password: " tws_password
 
-while [ "$choice" != "1" ] && [ "$choice" != "2" ]; do
-  echo "Menu:"
-  echo "[1] Trade Live"
-  echo "[2] Trade Paper"
-  echo "[3] Reset Credentials"
-  echo "[4] Reset Configuration"
+        echo "TWS_USERID=$tws_userid" >> environment/.cred
+        echo "TWS_PASSWORD=$tws_password" >> environment/.cred
+    fi
+}
 
-  read -rp "Enter your choice: " choice
+setupStrategies(){
+    while True; do
+        echo "Menu:"
+        echo "[1] Add Strategy"
+        echo "[2] Remove Strategy"
+        echo "[3] Reset Credentials"
+        echo "[4] Reset Strategies"
+        echo "[5] Done"
 
-  if [ "$choice" == "1" ]; then
-      echo "[*] Will Deploy Live"
-      PORT=4003
+        read -rp "Enter your choice: " choice
 
-  elif [ "$choice" == "2" ]; then
-      echo "[*] Will Deploy Paper"
-      PORT=4004
+        if [ "$choice" == "1" ]; then
+            read -rp "Strategy Name: " strategy_name
+            read -rp "Trading Mode (live or paper): " live_or_paper
+            read -rp "Strategy GitHub Repo: " bot_repo
+            read -rp "Database String (Optional): " db_str
+            read -rp "Strategy Config File (Optional): " config_file
 
-  elif [ "$choice" == "3" ]; then
-      rm -f "environment/.cred"
-      echo "[*] Credentials Reset"
+            echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file" >> environment/.pref
 
-  elif [ "$choice" == "4" ]; then
-      rm -f "environment/.pref"
-      echo "[*] Settings Reset"
+        elif [ "$choice" == "2" ]; then
+            echo "WIP"
 
-  else
-      echo "Invalid choice. Exiting..."
-      exit 1
-      
-  fi
-done
+        elif [ "$choice" == "3" ]; then
+            rm -f "environment/.cred"
+            echo "[*] Credentials Reset"
 
-# Make .cred if not available
-if [ ! -e "environment/.cred" ]; then
-  # Ask for IB Creds
-  read -rp "Enter IBKR Username: " tws_userid
-  read -rp "Enter IBKR Password: " tws_password
+        elif [ "$choice" == "4" ]; then
+            rm -f "environment/.pref"
+            echo "[*] Strategies Reset"
 
-  echo "TWS_USERID=$tws_userid" >> environment/.cred
-  echo "TWS_PASSWORD=$tws_password" >> environment/.cred
+        elif [ "$choice" == "5" ]; then
+            return
+        else
+            echo "Invalid choice. Exiting..."
+            exit 1
+        fi
+    done
+}
 
-  # Ask for Alpaca Creds
-  read -rp "Enter ALPACA_API_KEY: " alpaca_api_key
-  read -rp "Enter ALPACA_API_SECRET: " alpaca_api_secret
-
-  echo "ALPACA_API_KEY=$alpaca_api_key" >> environment/.cred
-  echo "ALPACA_API_SECRET=$alpaca_api_secret" >> environment/.cred
-fi
-
-if [ ! -e "environment/.pref" ]; then
-  read -rp "Enter Lumibot Strategy GitHub URL: " bot_repo
-  echo "BOT_REPO=$bot_repo" >> environment/.pref
-  #bot_repo="git@github.com:Lumiwealth-Strategies/options_condor_martingale.git"
-
-  # Not To Touch the Values
-  echo 'ALPACA_BASE_URL="https://paper-api.alpaca.markets/v2"' >> environment/.pref
-  echo 'BROKER=IBKR' >> environment/.pref
-  echo 'INTERACTIVE_BROKERS_IP=ib-gateway' >> environment/.pref
-fi
-
-printf "INTERACTIVE_BROKERS_PORT=$PORT\n" >> environment/.pref
-if [ "$PORT" == 4003 ]; then
-    printf "TRADING_MODE=live\n" >> environment/.pref
-elif [ "$PORT" == 4004 ]; then
-    printf "TRADING_MODE=paper\n" >> environment/.pref
-fi
-
-read -rp "Enter CONFIG_FILE: " config_file
-echo "CONFIG_FILE=$config_file" >> environment/.pref
+main
