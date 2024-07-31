@@ -19,7 +19,7 @@ getIBCredentials(){
 }
 
 setupStrategies(){
-    while (True); do
+    while true; do
         echo "Menu:"
         echo "[1] Add Strategy"
         echo "[2] Remove Strategy"
