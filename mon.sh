@@ -23,7 +23,7 @@ function main_menu() {
             echo "Select a strategy:"
             
             for i in "${!menu_strategies[@]}"; do
-                echo "[$(($i+1))] ${menu_strategies[$i]}"
+                echo "[$((i+1))] ${menu_strategies[$i]}"
             done
 
             read -rp "Select Strategy: : " choice
@@ -31,13 +31,13 @@ function main_menu() {
             selected_strategy="${menu_strategies[$((choice-1))]}"
             echo "You selected: $selected_strategy"
 
-            sudo docker logs $(sudo docker ps --filter "name=$selected_strategy" -q)
+            sudo docker logs "$(sudo docker ps --filter "name=$selected_strategy" -q)"
             read -n 1 -s -r -p "Press any key to continue..."
             echo
             main_menu
             ;;
         2)
-            sudo docker logs $(sudo docker ps --filter "name=ib-gateway" -q)
+            sudo docker logs "$(sudo docker ps --filter "name=ib-gateway" -q)"
             read -n 1 -s -r -p "Press any key to continue..."
             echo
             main_menu           
