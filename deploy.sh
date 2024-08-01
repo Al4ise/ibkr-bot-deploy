@@ -22,8 +22,8 @@ main(){
   done < "environment/.pref"
 
   for strategy in "${strategies[@]}"; do
-    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file <<< "$strategy"
-    trading_mode+=" $(addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file")"
+    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook <<< "$strategy"
+    trading_mode+=" $(addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook")"
   done
 
   if [[ "$trading_mode" =~ live ]] && [[ "$trading_mode" =~ paper ]]; then
@@ -94,6 +94,7 @@ addStrategy(){
   local bot_repo="$3"
   local db_str="$4"
   local config_file="$5"
+  local webhook_url="$6"
 
   if [ "$live_or_paper" == "live" ]; then
     PORT=4003
@@ -147,6 +148,7 @@ addStrategy(){
       INTERACTIVE_BROKERS_CLIENT_ID: $((RANDOM % 1000 + 1))
       INTERACTIVE_BROKERS_IP: ib-gateway
       DB_CONNECTION_STR: $db_str
+      DISCORD_WEBHOOK_URL: $webhook_url
     networks: 
       - ib_network
   " >> docker-compose.yaml
