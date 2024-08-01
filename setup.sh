@@ -35,8 +35,9 @@ setupStrategies(){
             read -rp "Strategy GitHub Repo: " bot_repo
             read -rp "Database String (Optional): " db_str
             read -rp "Strategy Config File (Optional): " config_file
-
-            echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file" >> environment/.pref
+            read -rp "Discord Webhook URL (Optional): " webhook
+            
+            echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file,$webhook" >> environment/.pref
 
         elif [ "$choice" == "2" ]; then
             echo "WIP"

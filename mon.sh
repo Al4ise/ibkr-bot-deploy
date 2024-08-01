@@ -11,6 +11,9 @@ function main_menu() {
     echo
     case $choice in
         1)
+            strategies=()
+            menu_strategies=()
+
             # get all strategies from .pref and make a menu that picks one strategy name
             while IFS= read -r line; do
                 strategies+=("$line")
