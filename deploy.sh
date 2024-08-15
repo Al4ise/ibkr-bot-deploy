@@ -17,11 +17,10 @@ main(){
 
   # create the docker-compose file
   initDockerCompose
-  gateway_mode="$(addStrategies)"
-
+  addStrategies
 
   # add the gateway to the docker-compose
-  setupGateway "$gateway_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
+  setupGateway "$trading_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
 
   # Run
   sudo docker compose up --remove-orphans -d
@@ -30,10 +29,9 @@ main(){
 addStrategies(){
   # returns the required gateway trading mode
   # Read the strategies one by one and add them to the docker-compose
-  local trading_mode=""
   while IFS= read -r line; do
-    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount <<< "$line"
-    addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount"
+    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount client_id <<< "$line"
+    addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount" "$client_id"
     trading_mode+="$live_or_paper"
   done < "environment/.pref"
 
@@ -45,8 +43,6 @@ addStrategies(){
   elif [[ "$trading_mode" =~ paper ]]; then
     trading_mode="paper"
   fi
-
-  echo "$trading_mode"
 }
 
 initDockerCompose(){
@@ -107,6 +103,7 @@ addStrategy(){
   local config_file="$5"
   local webhook_url="$6"
   local subaccount="$7"
+  local client_id="$8"
 
   if [ "$live_or_paper" == "live" ]; then
     PORT=4003
@@ -138,7 +135,7 @@ addStrategy(){
       - ib-gateway
     environment:
       INTERACTIVE_BROKERS_PORT: $PORT
-      INTERACTIVE_BROKERS_CLIENT_ID: $((RANDOM % 1000 + 1))
+      INTERACTIVE_BROKERS_CLIENT_ID: $client_id
       INTERACTIVE_BROKERS_IP: ib-gateway
       DB_CONNECTION_STR: $db_str
       DISCORD_WEBHOOK_URL: $webhook_url
@@ -147,8 +144,6 @@ addStrategy(){
     networks: 
       - ib_network
   " >> docker-compose.yaml
-
-  echo "$live_or_paper"
 }
 
 main
