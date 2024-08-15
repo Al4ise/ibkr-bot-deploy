@@ -8,7 +8,6 @@ function main_menu() {
     echo "[0] Exit"
 
     read -p "Enter your choice: " choice
-    echo
     case $choice in
         1)
             strategies=()
