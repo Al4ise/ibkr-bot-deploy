@@ -15,17 +15,21 @@ main(){
     source setup.sh
   done
 
-  setupDockerCompose
+  # create the docker-compose file
+  initDockerCompose
 
+  # add all strategies to an array
   while IFS= read -r line; do
       strategies+=("$line")
   done < "environment/.pref"
 
+  # add the strategies to the docker-compose file
   for strategy in "${strategies[@]}"; do
-    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook <<< "$strategy"
-    trading_mode+=" $(addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook")"
+    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount <<< "$strategy"
+    trading_mode+="$(addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount")"
   done
 
+  # decide which mode to run the gateway in
   if [[ "$trading_mode" =~ live ]] && [[ "$trading_mode" =~ paper ]]; then
     trading_mode="both"
   elif [[ "$trading_mode" =~ live ]]; then
@@ -34,6 +38,7 @@ main(){
     trading_mode="paper"
   fi
 
+  # add the gateway to the docker-compose
   source environment/.cred
   setupGateway "$trading_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
 
@@ -44,7 +49,7 @@ main(){
   sudo docker compose up --remove-orphans -d
 }
 
-setupDockerCompose(){
+initDockerCompose(){
   echo "networks: 
   ib_network: 
     driver: bridge
@@ -95,6 +100,7 @@ addStrategy(){
   local db_str="$4"
   local config_file="$5"
   local webhook_url="$6"
+  local subaccount="$7"
 
   if [ "$live_or_paper" == "live" ]; then
     PORT=4003
@@ -149,6 +155,7 @@ addStrategy(){
       INTERACTIVE_BROKERS_IP: ib-gateway
       DB_CONNECTION_STR: $db_str
       DISCORD_WEBHOOK_URL: $webhook_url
+      IB_SUBACCOUNT: $subaccount
     networks: 
       - ib_network
   " >> docker-compose.yaml
