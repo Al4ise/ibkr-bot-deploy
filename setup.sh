@@ -38,8 +38,8 @@ setupStrategies(){
                 read -rp "Strategy Config File (Optional): " config_file
                 read -rp "Discord Webhook URL (Optional): " webhook
                 read -rp "IB Subaccount (Optional): " ib_subaccount
-                
-                echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file,$webhook,$ib_subaccount" >> environment/.pref
+                client_id="$((RANDOM % 1000 + 1))"
+                echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file,$webhook,$ib_subaccount,$client_id", >> environment/.pref
                 ;;
 
             2)
