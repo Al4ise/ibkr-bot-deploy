@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 main(){
+  # Don't tolerate any errors
   set -e
 
   dir="$(realpath "$(dirname "$0")")"
-  OS="$(uname)"
   cd "$dir"
 
   cleanup
@@ -17,17 +17,25 @@ main(){
 
   # create the docker-compose file
   initDockerCompose
+  gateway_mode="$(addStrategies)"
 
-  # add all strategies to an array
+
+  # add the gateway to the docker-compose
+  setupGateway "$gateway_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
+
+  # Run
+  sudo docker compose up --remove-orphans -d
+}
+
+addStrategies(){
+  # returns the required gateway trading mode
+  # Read the strategies one by one and add them to the docker-compose
+  local trading_mode=""
   while IFS= read -r line; do
-      strategies+=("$line")
+    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount <<< "$line"
+    addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount"
+    trading_mode+="$live_or_paper"
   done < "environment/.pref"
-
-  # add the strategies to the docker-compose file
-  for strategy in "${strategies[@]}"; do
-    IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount <<< "$strategy"
-    trading_mode+="$(addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount")"
-  done
 
   # decide which mode to run the gateway in
   if [[ "$trading_mode" =~ live ]] && [[ "$trading_mode" =~ paper ]]; then
@@ -38,15 +46,7 @@ main(){
     trading_mode="paper"
   fi
 
-  # add the gateway to the docker-compose
-  source environment/.cred
-  setupGateway "$trading_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
-
-  # Kill gateways running
-  sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
-
-  # Run
-  sudo docker compose up --remove-orphans -d
+  echo "$trading_mode"
 }
 
 initDockerCompose(){
@@ -67,6 +67,8 @@ setupGateway(){
   local trading_mode="$1"
   local ib_username="$2"
   local ib_password="$3"
+
+  source environment/.cred
 
   echo "  ib-gateway:
     image: ghcr.io/gnzsnz/ib-gateway:stable
@@ -91,6 +93,10 @@ setupGateway(){
     ports:
       - 5900:5900
   " >> docker-compose.yaml
+
+  # Kill gateways running
+  sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
+  sudo docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep 'ib-gateway' | awk '{print $2}' | xargs -r sudo docker rmi --force
 }
 
 addStrategy(){
@@ -122,25 +128,6 @@ addStrategy(){
   #cp environment/requirements.txt environment/bot/
   cp environment/Dockerfile "environment/bots/$strategy_name"
 
-  # Set config
-  if [ -n "$config_file" ]; then 
-    case $OS in
-      'Linux')
-        #sed -i 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
-        sed -i "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${config_file}'/" "environment/bots/$strategy_name/main.py"
-        ;;
-
-      'Darwin') 
-        #sed -i '' 's/if ALPACA_CONFIG\["API_KEY"\]:/if ALPACA_CONFIG["API_KEY"] and os.environ.get("BROKER", "").lower() == "alpaca":/' environment/bot/credentials.py
-        sed -i '' "s/LIVE_TRADING_CONFIGURATION_FILE_NAME = '.*'/LIVE_TRADING_CONFIGURATION_FILE_NAME = '${config_file}'/" "environment/bots/$strategy_name/main.py"
-        ;;
-
-        *) 
-        exit 1
-        ;;  
-    esac
-  fi
-
   echo "  $strategy_name:
     build:
       context: ./environment/bots/$strategy_name
@@ -156,6 +143,7 @@ addStrategy(){
       DB_CONNECTION_STR: $db_str
       DISCORD_WEBHOOK_URL: $webhook_url
       IB_SUBACCOUNT: $subaccount
+      LIVE_CONFIG: $config_file
     networks: 
       - ib_network
   " >> docker-compose.yaml

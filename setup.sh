@@ -2,7 +2,7 @@
 
 main(){
     dir="$(realpath "$(dirname "$0")")"
-    cd "$dir"
+    cd "$dir" || exit
     getIBCredentials
     setupStrategies
 }
