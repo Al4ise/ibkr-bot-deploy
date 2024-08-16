@@ -10,18 +10,14 @@ function main_menu() {
     read -p "Enter your choice: " choice
     case $choice in
         1)
-            strategies=()
             menu_strategies=()
 
             # get all strategies from .pref and make a menu that picks one strategy name
-            while IFS= read -r line; do
-                strategies+=("$line")
-            done < "environment/.pref"
-
-            for strategy in "${strategies[@]}"; do
+            while IFS= read -r strategy; do
                 IFS=',' read -r strategy_name _ <<< "$strategy"
                 menu_strategies+=( "$strategy_name" )
-            done
+            done < "environment/.pref"
+
             echo "Select a strategy:"
             
             for i in "${!menu_strategies[@]}"; do
