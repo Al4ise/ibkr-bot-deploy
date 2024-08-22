@@ -16,7 +16,7 @@ function main_menu() {
             while IFS= read -r strategy; do
                 IFS=',' read -r strategy_name _ <<< "$strategy"
                 menu_strategies+=( "$strategy_name" )
-            done < "environment/.pref"
+            done < ".pref"
 
             echo "Select a strategy:"
             

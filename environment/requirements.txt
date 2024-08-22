@@ -1,5 +1,0 @@
-python-dotenv>=1.0.0,<2.0.0
-lumibot
-alpaca_trade_api
-pandas-ta>=0.3.14b0,<0.4.0
-numpy<2.0.0

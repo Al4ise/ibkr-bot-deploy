@@ -10,7 +10,7 @@ main(){
   cleanup
 
   # Check Settings
-  while [ ! -f "environment/.cred" ] || [ ! -f "environment/.pref" ]; do
+  while [ ! -f ".cred" ] || [ ! -f ".pref" ]; do
     echo "[*] Running setup.sh..."
     source setup.sh
   done
@@ -33,7 +33,7 @@ addStrategies(){
     IFS=',' read -r strategy_name live_or_paper bot_repo db_str config_file webhook ib_subaccount client_id <<< "$line"
     addStrategy "$strategy_name" "$live_or_paper" "$bot_repo" "$db_str" "$config_file" "$webhook" "$ib_subaccount" "$client_id"
     trading_mode+="$live_or_paper"
-  done < "environment/.pref"
+  done < ".pref"
 
   # decide which mode to run the gateway in
   if [[ "$trading_mode" =~ live ]] && [[ "$trading_mode" =~ paper ]]; then
@@ -55,7 +55,7 @@ services:" >> docker-compose.yaml
 # cleanup
 cleanup() {
     echo "Performing cleanup..."
-    rm -rf "environment/bots"
+    rm -rf "bots"
     rm -f "docker-compose.yaml"
 }
 
@@ -64,7 +64,7 @@ setupGateway(){
   local ib_username="$2"
   local ib_password="$3"
 
-  source environment/.cred
+  source .cred
 
   echo "  ib-gateway:
     image: ghcr.io/gnzsnz/ib-gateway:stable
@@ -90,9 +90,30 @@ setupGateway(){
       - 5900:5900
   " >> docker-compose.yaml
 
-  # Kill gateways running
-  sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker kill > /dev/null
+  # Kill and remove running gateways
+  sudo docker ps --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker stop > /dev/null
+  sudo docker ps -a --format "{{.Names}}" | grep 'ib-gateway' | xargs -r sudo docker rm > /dev/null
+
+  # Remove the image
   sudo docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep 'ib-gateway' | awk '{print $2}' | xargs -r sudo docker rmi --force
+}
+
+addDockerfile(){
+  strategy="$1"
+
+  # add needed files
+  rm -f "bots/$strategy/Dockerfile"
+  if [ -d "bots/$strategy/src" ]; then
+    workdir="/app/src"
+  else
+    workdir="/app"
+  fi
+
+  echo "FROM python:3.11-slim-bookworm
+WORKDIR $workdir
+COPY . /app
+RUN pip install --no-cache-dir -r /app/requirements.txt
+CMD python main.py" >> "bots/$strategy/Dockerfile"
 }
 
 addStrategy(){
@@ -118,16 +139,15 @@ addStrategy(){
   sudo docker ps --format "{{.Names}}" | grep "$strategy_name" | xargs -r sudo docker kill > /dev/null
   sudo docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "$strategy_name" | awk '{print $2}' | xargs -r sudo docker rmi --force
 
-  mkdir -p "environment/bots/$strategy_name"
-  git clone "$bot_repo" "environment/bots/$strategy_name" || { echo "Probably not logged into git. Exiting..."; exit 1; }
+  mkdir -p "bots/$strategy_name"
+  git clone "$bot_repo" "bots/$strategy_name" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
-  # add needed files
-  #cp environment/requirements.txt environment/bot/
-  cp environment/Dockerfile "environment/bots/$strategy_name"
+
+  addDockerfile "$strategy_name"
 
   echo "  $strategy_name:
     build:
-      context: ./environment/bots/$strategy_name
+      context: ./bots/$strategy_name
     env_file: 
       - .env
     restart: always

@@ -8,13 +8,13 @@ main(){
 }
 # ask for username and password
 getIBCredentials(){
-    if [ ! -e "environment/.cred" ]; then
+    if [ ! -e ".cred" ]; then
         # Ask for IB Creds
         read -rp "Enter IBKR Username: " tws_userid
         read -rp "Enter IBKR Password: " tws_password
 
-        echo "TWS_USERID=$tws_userid" >> environment/.cred
-        echo "TWS_PASSWORD=$tws_password" >> environment/.cred
+        echo "TWS_USERID=$tws_userid" >> .cred
+        echo "TWS_PASSWORD=$tws_password" >> .cred
     fi
 }
 
@@ -39,7 +39,7 @@ setupStrategies(){
                 read -rp "Discord Webhook URL (Optional): " webhook
                 read -rp "IB Subaccount (Optional): " ib_subaccount
                 client_id="$((RANDOM % 1000 + 1))"
-                echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file,$webhook,$ib_subaccount,$client_id", >> environment/.pref
+                echo "${strategy_name,,},$live_or_paper,$bot_repo,$db_str,$config_file,$webhook,$ib_subaccount,$client_id", >> .pref
                 ;;
 
             2)
@@ -47,12 +47,12 @@ setupStrategies(){
                 ;;
 
             3)
-                rm -f "environment/.cred"
+                rm -f ".cred"
                 echo "[*] Credentials Reset"
                 ;;
 
             4)
-                rm -f "environment/.pref"
+                rm -f ".pref"
                 echo "[*] Strategies Reset"
                 ;;
 
