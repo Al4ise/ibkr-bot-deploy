@@ -20,6 +20,7 @@ main(){
   addStrategies
 
   # add the gateway to the docker-compose
+  source .cred
   setupGateway "$trading_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
 
   # Run
@@ -63,8 +64,6 @@ setupGateway(){
   local trading_mode="$1"
   local ib_username="$2"
   local ib_password="$3"
-
-  source .cred
 
   echo "  ib-gateway:
     image: ghcr.io/gnzsnz/ib-gateway:stable
