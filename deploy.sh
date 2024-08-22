@@ -96,6 +96,16 @@ setupGateway(){
   sudo docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep 'ib-gateway' | awk '{print $2}' | xargs -r sudo docker rmi --force
 }
 
+cloneStrategy(){
+  url="$1"
+  strategy="$2"
+
+  git clone --filter=blob:none "$url" "bots/$strategy" || { echo "Probably not logged into git. Exiting..."; exit 1; }
+  git -C "bots/$strategy" sparse-checkout init --no-cone
+  git -C "bots/$strategy" sparse-checkout set '/*' '!*.pdf' '!*.jpg' '!*.csv' '!*.xlsx'
+  git -C "bots/$strategy" checkout
+}
+
 addDockerfile(){
   strategy="$1"
 
@@ -138,7 +148,7 @@ addStrategy(){
   sudo docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "$strategy_name" | awk '{print $2}' | xargs -r sudo docker rmi --force
 
   mkdir -p "bots/$strategy_name"
-  git clone "$bot_repo" "bots/$strategy_name" || { echo "Probably not logged into git. Exiting..."; exit 1; }
+  cloneStrategy "$bot_repo" "$strategy_name"
 
   addDockerfile "$strategy_name"
 
