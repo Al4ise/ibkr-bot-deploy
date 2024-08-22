@@ -21,7 +21,7 @@ main(){
 
   # add the gateway to the docker-compose
   source .cred
-  setupGateway "$trading_mode" "$TWS_USERNAME" "$TWS_PASSWORD"
+  setupGateway "$trading_mode" "$TWS_USERID" "$TWS_PASSWORD"
 
   # Run
   sudo docker compose up --remove-orphans -d
