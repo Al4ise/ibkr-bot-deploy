@@ -69,8 +69,6 @@ setupGateway(){
   echo "  ib-gateway:
     image: ghcr.io/gnzsnz/ib-gateway:stable
     restart: always
-    env_file: 
-      - .env
     environment:
       TWS_USERID: $ib_username
       TWS_PASSWORD: $ib_password
@@ -142,14 +140,11 @@ addStrategy(){
   mkdir -p "bots/$strategy_name"
   git clone "$bot_repo" "bots/$strategy_name" || { echo "Probably not logged into git. Exiting..."; exit 1; }
 
-
   addDockerfile "$strategy_name"
 
   echo "  $strategy_name:
     build:
       context: ./bots/$strategy_name
-    env_file: 
-      - .env
     restart: always
     depends_on:
       - ib-gateway
